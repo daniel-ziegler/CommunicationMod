@@ -549,6 +549,11 @@ public class GameStateConverter {
         state.put("player", convertPlayerToJson(AbstractDungeon.player));
         state.put("turn", GameActionManager.turn);
         state.put("cards_discarded_this_turn", GameActionManager.totalDiscardedThisTurn);
+        state.put("cards_played_this_turn", AbstractDungeon.actionManager.cardsPlayedThisTurn.size());
+        state.put("attacks_played_this_turn", (int) AbstractDungeon.actionManager.cardsPlayedThisTurn.stream()
+                .filter(c -> c.type == AbstractCard.CardType.ATTACK).count());
+        state.put("skills_played_this_turn", (int) AbstractDungeon.actionManager.cardsPlayedThisTurn.stream()
+                .filter(c -> c.type == AbstractCard.CardType.SKILL).count());
         state.put("times_damaged", AbstractDungeon.player.damagedThisCombat);
         return state;
     }
