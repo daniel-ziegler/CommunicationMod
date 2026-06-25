@@ -644,6 +644,12 @@ public class GameStateConverter {
             jsonCard.put("is_playable", card.canUse(AbstractDungeon.player, null));
         }
         jsonCard.put("cost", card.costForTurn);
+        // Card damage for verifying a reconstruction against the live game. base_damage is the
+        // printed base (Perfect Strike restores it to 6, folding its Strike bonus into `damage`
+        // instead); `damage` is the in-hand displayed value -- base + combat bonuses + player-side
+        // modifiers (strength/weak/stance), with no target vulnerable. Both -1 on non-attacks.
+        jsonCard.put("base_damage", card.baseDamage);
+        jsonCard.put("damage", card.damage);
         jsonCard.put("upgrades", card.timesUpgraded);
         jsonCard.put("id", card.cardID);
         jsonCard.put("type", card.type.name());
