@@ -655,11 +655,14 @@ public class ChoiceScreenUtils {
             ShopScreenPatch.hoverCard = card;
             card.hb.clicked = true;
         } else if (shopItem instanceof StoreRelic) {
-            StoreRelic relic = (StoreRelic) shopItem;
-            relic.relic.hb.clicked = true;
+            // Buy directly instead of simulating a hitbox click. The click path
+            // (hb.clicked = true) only registers if the item happens to be hovered/processed on the
+            // right frame, so it is flaky and can silently no-op -- leaving the shop unchanged and
+            // the bridge re-issuing the same buy forever. purchaseRelic()/purchasePotion() are public
+            // and carry their own gold guards (getAvailableShopItems already filtered to affordable).
+            ((StoreRelic) shopItem).purchaseRelic();
         } else if (shopItem instanceof StorePotion) {
-            StorePotion potion = (StorePotion) shopItem;
-            potion.potion.hb.clicked = true;
+            ((StorePotion) shopItem).purchasePotion();
         }
     }
 
