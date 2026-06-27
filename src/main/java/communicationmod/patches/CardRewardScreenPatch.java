@@ -13,6 +13,9 @@ public class CardRewardScreenPatch {
 
     public static boolean doHover = false;
     public static AbstractCard hoverCard;
+    // Watch mode: when true the hover is HELD (not cleared each frame and not auto-clicked), so a
+    // human can see which card the bot is about to take before it commits. Set by the "hover" command.
+    public static boolean hold = false;
 
     @SpirePatch(
             clz=CardRewardScreen.class,
@@ -55,7 +58,9 @@ public class CardRewardScreenPatch {
                 locator=Locator.class
         )
         public static void Insert(CardRewardScreen _instance) {
-            doHover = false;
+            if (!hold) {
+                doHover = false;
+            }
         }
 
         private static class Locator extends SpireInsertLocator {

@@ -78,6 +78,9 @@ public class CommandExecutor {
             case "wait":
                 executeWaitCommand(tokens);
                 return true;
+            case "hover":
+                executeHoverCommand(tokens);
+                return false;   // pure visual signal -- no game-state change, so no state emit
 
             default:
                 logger.info("This should never happen.");
@@ -112,6 +115,7 @@ public class CommandExecutor {
             availableCommands.add("key");
             availableCommands.add("click");
             availableCommands.add("wait");
+            availableCommands.add("hover");
         }
         availableCommands.add("state");
         return availableCommands;
@@ -404,6 +408,22 @@ public class CommandExecutor {
         InputActionPatch.key = keycode;
         InputHelper.updateFirst();
         GameStateListener.setTimeout(timeout);
+    }
+
+    // Watch mode: hold-hover the given choice index (card reward / boss relic / shop card) so a human
+    // can see what the bot is about to take. Pure visual signal; the bridge waits, then sends the real
+    // pick. No-op on screens without a hover patch.
+    private static void executeHoverCommand(String[] tokens) throws InvalidCommandException {
+        if (tokens.length < 2) {
+            throw new InvalidCommandException(tokens, InvalidCommandException.InvalidCommandFormat.MISSING_ARGUMENT);
+        }
+        int index;
+        try {
+            index = Integer.parseInt(tokens[1]);
+        } catch (NumberFormatException e) {
+            throw new InvalidCommandException(tokens, InvalidCommandException.InvalidCommandFormat.INVALID_ARGUMENT, tokens[1]);
+        }
+        ChoiceScreenUtils.hoverChoice(index);
     }
 
     private static void executeClickCommand(String[] tokens) throws InvalidCommandException {

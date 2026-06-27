@@ -406,7 +406,45 @@ public class ChoiceScreenUtils {
         return !cancelButton.isHidden;
     }
 
+    // Watch mode: hold-hover (no click) the choice the bot is about to make on a hover-capable screen
+    // (card reward / boss relic / shop card), so a human can see what it picks before it commits. Any
+    // other screen is a no-op. The hold persists across frames until the real pick clears it.
+    public static void hoverChoice(int choice) {
+        CardRewardScreenPatch.hold = false;
+        ShopScreenPatch.hold = false;
+        AbstractRelicUpdatePatch.hold = false;
+        ChoiceType type = getCurrentChoiceType();
+        if (type == ChoiceType.CARD_REWARD) {
+            ArrayList<String> choices = getCardRewardScreenChoices();
+            if (choice < 0 || choice >= choices.size() || choices.get(choice).equals("bowl")) {
+                return;
+            }
+            CardRewardScreenPatch.hoverCard = AbstractDungeon.cardRewardScreen.rewardGroup.get(choice);
+            CardRewardScreenPatch.doHover = true;
+            CardRewardScreenPatch.hold = true;
+        } else if (type == ChoiceType.BOSS_REWARD) {
+            if (choice < 0 || choice >= AbstractDungeon.bossRelicScreen.relics.size()) {
+                return;
+            }
+            AbstractRelicUpdatePatch.hoverRelic = AbstractDungeon.bossRelicScreen.relics.get(choice);
+            AbstractRelicUpdatePatch.doHover = true;
+            AbstractRelicUpdatePatch.hold = true;
+        } else if (type == ChoiceType.SHOP_SCREEN) {
+            ArrayList<Object> items = getAvailableShopItems();
+            if (choice < 0 || choice >= items.size()) {
+                return;
+            }
+            Object item = items.get(choice);
+            if (item instanceof AbstractCard) {   // relics/potions are bought directly (no hover patch)
+                ShopScreenPatch.hoverCard = (AbstractCard) item;
+                ShopScreenPatch.doHover = true;
+                ShopScreenPatch.hold = true;
+            }
+        }
+    }
+
     public static void makeCardRewardChoice(int choice) {
+        CardRewardScreenPatch.hold = false;   // the real pick always clicks (never held)
         ArrayList<String> choices = getCardRewardScreenChoices();
         if(choices.get(choice).equals("bowl")) {
             SingingBowlButton bowlButton = (SingingBowlButton) ReflectionHacks.getPrivate(AbstractDungeon.cardRewardScreen, CardRewardScreen.class, "bowlButton");
@@ -535,6 +573,7 @@ public class ChoiceScreenUtils {
     }
 
     public static void makeBossRewardChoice(int choice) {
+        AbstractRelicUpdatePatch.hold = false;   // the real pick always clicks (never held)
         AbstractRelic chosenRelic = AbstractDungeon.bossRelicScreen.relics.get(choice);
         AbstractRelicUpdatePatch.doHover = true;
         AbstractRelicUpdatePatch.hoverRelic = chosenRelic;
@@ -642,6 +681,7 @@ public class ChoiceScreenUtils {
     }
 
     public static void makeShopScreenChoice(int choice) {
+        ShopScreenPatch.hold = false;   // the real buy always clicks (never held)
         ArrayList<Object> shopItems = getAvailableShopItems();
         Object shopItem = shopItems.get(choice);
         if (shopItem instanceof String) {

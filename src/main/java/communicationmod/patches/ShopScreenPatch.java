@@ -15,6 +15,9 @@ public class ShopScreenPatch {
 
     public static boolean doHover = false;
     public static AbstractCard hoverCard;
+    // Watch mode: hold the hover (don't clear it each frame) so the bot's pending shop-card buy is
+    // visible before it commits. Set by the "hover" command, cleared when the buy actually fires.
+    public static boolean hold = false;
 
 
     @SpirePatch(
@@ -50,7 +53,9 @@ public class ShopScreenPatch {
                 for(AbstractCard card : colorlessCards) {
                     card.hb.hovered = card == hoverCard;
                 }
-                doHover = false;
+                if (!hold) {
+                    doHover = false;
+                }
             }
         }
 
