@@ -53,6 +53,13 @@ public class ShopScreenPatch {
                 for(AbstractCard card : colorlessCards) {
                     card.hb.hovered = card == hoverCard;
                 }
+                if (hoverCard != null) {
+                    // Warp the real cursor onto the card the bot is about to buy so the game's own
+                    // hover renders and the cursor visibly moves to it (same as the card-reward path).
+                    com.badlogic.gdx.Gdx.input.setCursorPosition(
+                            (int) hoverCard.hb.cX,
+                            (int) (com.badlogic.gdx.Gdx.graphics.getHeight() - hoverCard.hb.cY));
+                }
                 if (!hold) {
                     doHover = false;
                 }

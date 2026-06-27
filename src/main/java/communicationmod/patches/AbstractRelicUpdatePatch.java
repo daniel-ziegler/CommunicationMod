@@ -63,6 +63,11 @@ public class AbstractRelicUpdatePatch {
         if(doHover) {
             if(hoverRelic == _instance) {
                 _instance.hb.hovered = true;
+                // Warp the real cursor onto the boss relic the bot is about to take (same as the
+                // card-reward path) so the game's own hover renders and the cursor moves to it.
+                com.badlogic.gdx.Gdx.input.setCursorPosition(
+                        (int) _instance.hb.cX,
+                        (int) (com.badlogic.gdx.Gdx.graphics.getHeight() - _instance.hb.cY));
                 if (!hold) {            // held = signal only; the normal pick path clicks (hold=false)
                     _instance.hb.clicked = true;
                     doHover = false;

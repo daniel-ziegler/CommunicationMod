@@ -31,6 +31,12 @@ public class CardRewardScreenPatch {
             if(doHover) {
                 if(c.equals(hoverCard)) {
                     hoverCard.hb.hovered = true;
+                    // Warp the real OS cursor onto the pick so the game's own hover renders and the
+                    // cursor visibly moves to signal the choice. Hitbox cX/cY are bottom-left origin
+                    // (in window pixels); Gdx cursor coords are top-left, hence the height flip.
+                    com.badlogic.gdx.Gdx.input.setCursorPosition(
+                            (int) hoverCard.hb.cX,
+                            (int) (com.badlogic.gdx.Gdx.graphics.getHeight() - hoverCard.hb.cY));
                 } else {
                     c.hb.hovered = false;
                 }
