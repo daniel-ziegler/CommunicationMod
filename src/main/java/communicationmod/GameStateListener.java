@@ -7,6 +7,10 @@ import com.megacrit.cardcrawl.neow.NeowRoom;
 import com.megacrit.cardcrawl.rooms.AbstractRoom;
 import com.megacrit.cardcrawl.rooms.EventRoom;
 import com.megacrit.cardcrawl.rooms.VictoryRoom;
+import com.megacrit.cardcrawl.vfx.AbstractGameEffect;
+import com.megacrit.cardcrawl.vfx.cardManip.ShowCardAndObtainEffect;
+
+import java.util.ArrayList;
 
 public class GameStateListener {
     private static AbstractDungeon.CurrentScreen previousScreen = null;
@@ -112,6 +116,14 @@ public class GameStateListener {
         // This check happens before the rest since dying can happen in combat and messes with the other cases.
         if (newScreen == AbstractDungeon.CurrentScreen.DEATH && newScreen != previousScreen) {
             return true;
+        }
+        // A card-obtain animation (ShowCardAndObtainEffect, used by events like Council of Ghosts and by
+        // Neow) adds the card to the master deck partway through its update, not when it is queued. The
+        // game is otherwise "ready" the instant the option is chosen, so a bot that acts with no delay
+        // transitions rooms and the still-pending obtain effects are dropped -- the deck never gains the
+        // card even though any cost (e.g. the -50% max HP) already applied. Stay un-ready until they drain.
+        if (hasPendingCardObtainEffect()) {
+            return false;
         }
         // These screens have no interaction available.
         if (newScreen == AbstractDungeon.CurrentScreen.DOOR_UNLOCK || newScreen == AbstractDungeon.CurrentScreen.NO_INTERACT) {
@@ -244,5 +256,31 @@ public class GameStateListener {
 
     public static boolean isWaitingForCommand() {
         return waitingForCommand;
+    }
+
+    /**
+     * Whether a card is still mid-obtain in any of the dungeon effect queues. ShowCardAndObtainEffect
+     * (event/Neow card grants) only adds the card to the master deck during its update, so reporting a
+     * stable state before it finishes lets a fast client skip the obtain on the next room transition.
+     */
+    private static boolean hasPendingCardObtainEffect() {
+        return queueHasObtainEffect(AbstractDungeon.effectList)
+                || queueHasObtainEffect(AbstractDungeon.topLevelEffects)
+                || queueHasObtainEffect(AbstractDungeon.topLevelEffectsQueue)
+                || queueHasObtainEffect(AbstractDungeon.effectsQueue);
+    }
+
+    private static boolean queueHasObtainEffect(ArrayList<AbstractGameEffect> effects) {
+        if (effects == null) {
+            return false;
+        }
+        // Index loop (not for-each) to avoid a ConcurrentModificationException if the effect list is
+        // mutated during iteration; a transient miss is harmless (re-checked every dungeon update).
+        for (int i = 0; i < effects.size(); i++) {
+            if (effects.get(i) instanceof ShowCardAndObtainEffect) {
+                return true;
+            }
+        }
+        return false;
     }
 }
