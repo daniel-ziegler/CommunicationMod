@@ -25,6 +25,11 @@ public class GameStateListener {
     private static boolean hasPresentedOutOfGameState = false;
     private static boolean waitOneUpdate = false;
     private static int timeout = 0;
+    // Frames spent waiting for a pending card-obtain animation to drain. Bounded by OBTAIN_WAIT_CAP so
+    // the readiness gate can never block forever, even in the (effectively impossible, since the effect
+    // is time-driven) case where the real progress gate sits behind it.
+    private static int obtainWaitFrames = 0;
+    private static final int OBTAIN_WAIT_CAP = 240;  // ~4s at 60fps; an obtain animation resolves in ~1s
 
     /**
      * Used to indicate that something (in game logic, not external command) has been done that will change the game state,
@@ -121,9 +126,15 @@ public class GameStateListener {
         // Neow) adds the card to the master deck partway through its update, not when it is queued. The
         // game is otherwise "ready" the instant the option is chosen, so a bot that acts with no delay
         // transitions rooms and the still-pending obtain effects are dropped -- the deck never gains the
-        // card even though any cost (e.g. the -50% max HP) already applied. Stay un-ready until they drain.
+        // card even though any cost (e.g. the -50% max HP) already applied. Stay un-ready until they drain,
+        // but only up to OBTAIN_WAIT_CAP frames so a stuck queue can never deadlock the readiness gate.
         if (hasPendingCardObtainEffect()) {
-            return false;
+            if (obtainWaitFrames < OBTAIN_WAIT_CAP) {
+                obtainWaitFrames++;
+                return false;
+            }
+        } else {
+            obtainWaitFrames = 0;
         }
         // These screens have no interaction available.
         if (newScreen == AbstractDungeon.CurrentScreen.DOOR_UNLOCK || newScreen == AbstractDungeon.CurrentScreen.NO_INTERACT) {
