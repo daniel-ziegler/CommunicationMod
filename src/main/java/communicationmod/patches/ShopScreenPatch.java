@@ -61,6 +61,8 @@ public class ShopScreenPatch {
                             (int) (com.badlogic.gdx.Gdx.graphics.getHeight() - hoverCard.hb.cY));
                 }
                 if (!hold) {
+                    // Buy committed -> park the cursor at top-middle so it isn't left on the card.
+                    com.badlogic.gdx.Gdx.input.setCursorPosition(com.badlogic.gdx.Gdx.graphics.getWidth() / 2, (int)(com.badlogic.gdx.Gdx.graphics.getHeight() * 0.15f));
                     doHover = false;
                 }
             }

@@ -71,6 +71,8 @@ public class AbstractRelicUpdatePatch {
                 if (!hold) {            // held = signal only; the normal pick path clicks (hold=false)
                     _instance.hb.clicked = true;
                     doHover = false;
+                    // Pick committed -> park the cursor at top-middle so it isn't left on the relic.
+                    com.badlogic.gdx.Gdx.input.setCursorPosition(com.badlogic.gdx.Gdx.graphics.getWidth() / 2, (int)(com.badlogic.gdx.Gdx.graphics.getHeight() * 0.15f));
                 }
             } else {
                 _instance.hb.hovered = false;

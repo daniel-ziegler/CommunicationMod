@@ -65,6 +65,10 @@ public class CardRewardScreenPatch {
         )
         public static void Insert(CardRewardScreen _instance) {
             if (!hold) {
+                if (doHover) {
+                    // Pick committed -> park the cursor at top-middle so it isn't left on the card.
+                    com.badlogic.gdx.Gdx.input.setCursorPosition(com.badlogic.gdx.Gdx.graphics.getWidth() / 2, (int)(com.badlogic.gdx.Gdx.graphics.getHeight() * 0.15f));
+                }
                 doHover = false;
             }
         }
