@@ -433,6 +433,15 @@ public class CommandExecutor {
         if (tokens.length < 2) {
             throw new InvalidCommandException(tokens, InvalidCommandException.InvalidCommandFormat.MISSING_ARGUMENT);
         }
+        // Named button targets (no choice-list index): the proceed button and the leave/cancel button.
+        if (tokens[1].equals("proceed")) {
+            ChoiceScreenUtils.hoverProceed();
+            return;
+        }
+        if (tokens[1].equals("leave")) {
+            ChoiceScreenUtils.hoverLeave();
+            return;
+        }
         int index;
         try {
             index = Integer.parseInt(tokens[1]);

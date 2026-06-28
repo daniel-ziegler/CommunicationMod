@@ -22,6 +22,8 @@ import com.megacrit.cardcrawl.rewards.RewardItem;
 import com.megacrit.cardcrawl.rewards.chests.AbstractChest;
 import com.megacrit.cardcrawl.rooms.*;
 import com.megacrit.cardcrawl.screens.CardRewardScreen;
+import com.megacrit.cardcrawl.rewards.RewardItem;
+import com.megacrit.cardcrawl.ui.buttons.ProceedButton;
 import com.megacrit.cardcrawl.ui.buttons.SkipCardButton;
 import com.megacrit.cardcrawl.screens.mainMenu.MenuCancelButton;
 import com.megacrit.cardcrawl.screens.select.BossRelicSelectScreen;
@@ -440,6 +442,19 @@ public class ChoiceScreenUtils {
             if (choice >= 0 && choice < nodes.size() && nodes.get(choice).hb != null) {
                 WatchCursorPatch.hoverHitbox(nodes.get(choice).hb);
             }
+        } else if (type == ChoiceType.COMBAT_REWARD) {  // a reward-list item (gold/potion/relic/key/card)
+            ArrayList<RewardItem> rewards = AbstractDungeon.combatRewardScreen.rewards;
+            if (choice >= 0 && choice < rewards.size()) {
+                WatchCursorPatch.hoverHitbox(rewards.get(choice).hb);
+            }
+        } else if (type == ChoiceType.GRID) {           // card remove / upgrade / transform grid
+            ArrayList<AbstractCard> cards = getGridScreenCards();
+            if (choice >= 0 && choice < cards.size()) {
+                // Just warp to the card. If it's scrolled off-screen the cursor lands at the screen
+                // edge, where the grid's own cursor-position auto-scroll (top/bottom 25%) pulls the
+                // list toward it; the per-frame warp follows the card up and self-stabilizes in view.
+                WatchCursorPatch.hoverHitbox(cards.get(choice).hb);
+            }
         } else if (type == ChoiceType.BOSS_REWARD) {
             if (choice < 0 || choice >= AbstractDungeon.bossRelicScreen.relics.size()) {
                 return;
@@ -472,6 +487,22 @@ public class ChoiceScreenUtils {
             if (choice >= 0 && choice < buttons.size()) {
                 WatchCursorPatch.hoverHitbox(buttons.get(choice).hb);
             }
+        }
+    }
+
+    /** Watch mode: warp the cursor onto the bottom-right Proceed button (combat reward / end of map). */
+    public static void hoverProceed() {
+        ProceedButton pb = AbstractDungeon.overlayMenu.proceedButton;
+        Hitbox hb = (Hitbox) ReflectionHacks.getPrivate(pb, ProceedButton.class, "hb");
+        if (hb != null) {
+            WatchCursorPatch.hoverHitbox(hb);
+        }
+    }
+
+    /** Watch mode: warp the cursor onto the Leave/Cancel button (e.g. leaving the shop). */
+    public static void hoverLeave() {
+        if (AbstractDungeon.overlayMenu.cancelButton.hb != null) {
+            WatchCursorPatch.hoverHitbox(AbstractDungeon.overlayMenu.cancelButton.hb);
         }
     }
 
