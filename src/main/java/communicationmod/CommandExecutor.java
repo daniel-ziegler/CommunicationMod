@@ -237,6 +237,14 @@ public class CommandExecutor {
             if(target_monster == null) {
                 throw new InvalidCommandException("Selected card requires an enemy target.");
             }
+            // Mirror AbstractPlayer.playCard: while Surrounded (act-4 Spire Shield + Spear), targeting
+            // an enemy turns the player to face it, which flips which OTHER monster is "behind" and so
+            // takes the 1.5x back-attack (AbstractMonster.applyBackAttack reads player.flipHorizontal).
+            // The cardQueue path the bot uses skips the manual-targeting flip, so without this the live
+            // back-attack never changes with the bot's chosen target.
+            if (AbstractDungeon.player.hasPower("Surrounded")) {
+                AbstractDungeon.player.flipHorizontal = target_monster.drawX < AbstractDungeon.player.drawX;
+            }
             AbstractDungeon.actionManager.cardQueue.add(new CardQueueItem(card, target_monster));
         } else {
             AbstractDungeon.actionManager.cardQueue.add(new CardQueueItem(card, null));
