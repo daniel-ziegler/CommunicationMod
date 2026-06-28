@@ -130,7 +130,7 @@ public class GameStateListener {
         }
         // A card-obtain animation (ShowCardAndObtainEffect, used by events like Council of Ghosts and by
         // Neow) adds the card to the master deck partway through its update, not when it is queued. The
-        // game is otherwise "ready" the instant the option is chosen, so a bot that acts with no delay
+        // game is otherwise "ready" the instant the option is chosen, so a controller that acts with no delay
         // transitions rooms and the still-pending obtain effects are dropped -- the deck never gains the
         // card even though any cost (e.g. the -50% max HP) already applied. Stay un-ready until they drain,
         // but only up to OBTAIN_WAIT_CAP frames so a stuck queue can never deadlock the readiness gate.
@@ -155,7 +155,7 @@ public class GameStateListener {
         // In event rooms, we need to wait for the event wait timer to reach 0 before we can accurately
         // assess its state -- but only up to EVENT_WAIT_CAP frames. A stuck timer (Bonfire Spirits'
         // Offer phase has been seen to leave it non-zero) would otherwise deadlock readiness forever;
-        // past the cap, force a state change so the bot's pending choice can finally fire.
+        // past the cap, force a state change so the pending choice can finally fire.
         AbstractRoom currentRoom = AbstractDungeon.getCurrRoom();
         boolean eventRoomWaitingOnTimer = (currentRoom instanceof EventRoom
                 || currentRoom instanceof NeowRoom

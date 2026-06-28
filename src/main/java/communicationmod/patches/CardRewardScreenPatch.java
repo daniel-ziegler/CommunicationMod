@@ -14,7 +14,7 @@ public class CardRewardScreenPatch {
     public static boolean doHover = false;
     public static AbstractCard hoverCard;
     // Watch mode: when true the hover is HELD (not cleared each frame and not auto-clicked), so a
-    // human can see which card the bot is about to take before it commits. Set by the "hover" command.
+    // human can see which card is about to be taken before it commits. Set by the "hover" command.
     public static boolean hold = false;
 
     @SpirePatch(

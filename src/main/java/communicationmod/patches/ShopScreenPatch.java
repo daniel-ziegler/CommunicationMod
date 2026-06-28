@@ -15,7 +15,7 @@ public class ShopScreenPatch {
 
     public static boolean doHover = false;
     public static AbstractCard hoverCard;
-    // Watch mode: hold the hover (don't clear it each frame) so the bot's pending shop-card buy is
+    // Watch mode: hold the hover (don't clear it each frame) so the pending shop-card buy is
     // visible before it commits. Set by the "hover" command, cleared when the buy actually fires.
     public static boolean hold = false;
 
@@ -54,7 +54,7 @@ public class ShopScreenPatch {
                     card.hb.hovered = card == hoverCard;
                 }
                 if (hoverCard != null) {
-                    // Warp the real cursor onto the card the bot is about to buy so the game's own
+                    // Warp the real cursor onto the card about to be bought so the game's own
                     // hover renders and the cursor visibly moves to it (same as the card-reward path).
                     com.badlogic.gdx.Gdx.input.setCursorPosition(
                             (int) hoverCard.hb.cX,

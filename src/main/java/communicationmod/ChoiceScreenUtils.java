@@ -406,7 +406,7 @@ public class ChoiceScreenUtils {
         return !cancelButton.isHidden;
     }
 
-    // Watch mode: hold-hover (no click) the choice the bot is about to make on a hover-capable screen
+    // Watch mode: hold-hover (no click) the pending choice on a hover-capable screen
     // (card reward / boss relic / shop card), so a human can see what it picks before it commits. Any
     // other screen is a no-op. The hold persists across frames until the real pick clears it.
     public static void hoverChoice(int choice) {

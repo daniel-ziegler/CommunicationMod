@@ -240,8 +240,8 @@ public class CommandExecutor {
             // Mirror AbstractPlayer.playCard: while Surrounded (act-4 Spire Shield + Spear), targeting
             // an enemy turns the player to face it, which flips which OTHER monster is "behind" and so
             // takes the 1.5x back-attack (AbstractMonster.applyBackAttack reads player.flipHorizontal).
-            // The cardQueue path the bot uses skips the manual-targeting flip, so without this the live
-            // back-attack never changes with the bot's chosen target.
+            // The cardQueue path used here skips the manual-targeting flip, so without this the live
+            // back-attack never changes with the chosen target.
             if (AbstractDungeon.player.hasPower("Surrounded")) {
                 AbstractDungeon.player.flipHorizontal = target_monster.drawX < AbstractDungeon.player.drawX;
             }
@@ -419,7 +419,7 @@ public class CommandExecutor {
     }
 
     // Watch mode: hold-hover the given choice index (card reward / boss relic / shop card) so a human
-    // can see what the bot is about to take. Pure visual signal; the bridge waits, then sends the real
+    // can see the pending choice. Pure visual signal; the bridge waits, then sends the real
     // pick. No-op on screens without a hover patch.
     private static void executeHoverCommand(String[] tokens) throws InvalidCommandException {
         if (tokens.length < 2) {

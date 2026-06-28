@@ -18,7 +18,7 @@ public class AbstractRelicUpdatePatch {
 
     public static AbstractRelic hoverRelic;
     public static boolean doHover = false;
-    // Watch mode: hold the hover WITHOUT clicking, so the bot's pending boss-relic pick is visible
+    // Watch mode: hold the hover WITHOUT clicking, so the pending boss-relic pick is visible
     // before it commits. Set by the "hover" command; the normal pick path runs with hold=false (click).
     public static boolean hold = false;
 
@@ -63,7 +63,7 @@ public class AbstractRelicUpdatePatch {
         if(doHover) {
             if(hoverRelic == _instance) {
                 _instance.hb.hovered = true;
-                // Warp the real cursor onto the boss relic the bot is about to take (same as the
+                // Warp the real cursor onto the boss relic about to be taken (same as the
                 // card-reward path) so the game's own hover renders and the cursor moves to it.
                 com.badlogic.gdx.Gdx.input.setCursorPosition(
                         (int) _instance.hb.cX,
