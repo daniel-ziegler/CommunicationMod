@@ -30,6 +30,12 @@ public class GameStateListener {
     // is time-driven) case where the real progress gate sits behind it.
     private static int obtainWaitFrames = 0;
     private static final int OBTAIN_WAIT_CAP = 240;  // ~4s at 60fps; an obtain animation resolves in ~1s
+    // Frames spent gating on an event room's wait timer. Bounded by EVENT_WAIT_CAP: some event phases
+    // (seen on Bonfire Spirits' Offer) can leave waitTimer stuck non-zero, which would otherwise pin
+    // readiness false forever (a 150s no-progress hang) since waitingForCommand only flips on a
+    // hasDungeonStateChanged()==true that the gate blocks.
+    private static int eventWaitFrames = 0;
+    private static final int EVENT_WAIT_CAP = 240;  // ~4s at 60fps; a real event animation drains in <1s
 
     /**
      * Used to indicate that something (in game logic, not external command) has been done that will change the game state,
@@ -146,13 +152,23 @@ public class GameStateListener {
                 return false;
             }
         }
-        // In event rooms, we need to wait for the event wait timer to reach 0 before we can accurately assess its state.
+        // In event rooms, we need to wait for the event wait timer to reach 0 before we can accurately
+        // assess its state -- but only up to EVENT_WAIT_CAP frames. A stuck timer (Bonfire Spirits'
+        // Offer phase has been seen to leave it non-zero) would otherwise deadlock readiness forever;
+        // past the cap, force a state change so the bot's pending choice can finally fire.
         AbstractRoom currentRoom = AbstractDungeon.getCurrRoom();
-        if ((currentRoom instanceof EventRoom
+        boolean eventRoomWaitingOnTimer = (currentRoom instanceof EventRoom
                 || currentRoom instanceof NeowRoom
                 || (currentRoom instanceof VictoryRoom && ((VictoryRoom) currentRoom).eType == VictoryRoom.EventType.HEART))
-                && AbstractDungeon.getCurrRoom().event.waitTimer != 0.0F) {
-            return false;
+                && AbstractDungeon.getCurrRoom().event.waitTimer != 0.0F;
+        if (eventRoomWaitingOnTimer) {
+            if (eventWaitFrames < EVENT_WAIT_CAP) {
+                eventWaitFrames++;
+                return false;
+            }
+            return true;
+        } else {
+            eventWaitFrames = 0;
         }
         // The state has always changed in some way when one of these variables is different.
         // However, the state may not be finished changing, so we need to do some additional checks.
