@@ -21,6 +21,7 @@ import com.megacrit.cardcrawl.random.Random;
 import com.megacrit.cardcrawl.relics.AbstractRelic;
 import com.megacrit.cardcrawl.rooms.*;
 import communicationmod.patches.InputActionPatch;
+import communicationmod.patches.WatchCursorPatch;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -38,6 +39,13 @@ public class CommandExecutor {
         }
         if (!isCommandAvailable(tokens[0])) {
             throw new InvalidCommandException("Invalid command: " + tokens[0] + ". Possible commands: " + getAvailableCommands());
+        }
+        // Committing any real action ends a generic watch-cursor hover (shop relic/potion/removal,
+        // event option, campfire option, map node, card skip): stop warping and park the cursor.
+        // Not for "hover" (which sets it) or "state" (just re-queries). The screen-patch hovers
+        // (card reward / shop card / boss relic) keep their own park and never set this flag.
+        if (WatchCursorPatch.active && !tokens[0].equals("hover") && !tokens[0].equals("state")) {
+            WatchCursorPatch.clearAndPark();
         }
         String command_tail = command.substring(tokens[0].length());
         switch(tokens[0]) {

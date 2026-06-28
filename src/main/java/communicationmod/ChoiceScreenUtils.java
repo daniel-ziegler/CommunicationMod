@@ -22,6 +22,7 @@ import com.megacrit.cardcrawl.rewards.RewardItem;
 import com.megacrit.cardcrawl.rewards.chests.AbstractChest;
 import com.megacrit.cardcrawl.rooms.*;
 import com.megacrit.cardcrawl.screens.CardRewardScreen;
+import com.megacrit.cardcrawl.ui.buttons.SkipCardButton;
 import com.megacrit.cardcrawl.screens.mainMenu.MenuCancelButton;
 import com.megacrit.cardcrawl.screens.select.BossRelicSelectScreen;
 import com.megacrit.cardcrawl.screens.select.GridCardSelectScreen;
@@ -159,12 +160,6 @@ public class ChoiceScreenUtils {
     }
 
     public static void executeChoice(int choice_index) {
-        // Committing a pick ends any generic watch-cursor hover (shop relic/potion/purge, event
-        // options): stop warping and park the cursor. No-op for the screen-patch-driven hovers
-        // (card reward / shop card / boss relic), which park themselves on commit.
-        if (WatchCursorPatch.active) {
-            WatchCursorPatch.clearAndPark();
-        }
         ChoiceType choiceType = getCurrentChoiceType();
         switch (choiceType) {
             case EVENT:
@@ -422,6 +417,12 @@ public class ChoiceScreenUtils {
         WatchCursorPatch.active = false;
         ChoiceType type = getCurrentChoiceType();
         if (type == ChoiceType.CARD_REWARD) {
+            if (choice == -1) {   // skip the card reward (CancelAction) -> hover the skip button
+                SkipCardButton skip = (SkipCardButton) ReflectionHacks.getPrivate(
+                        AbstractDungeon.cardRewardScreen, CardRewardScreen.class, "skipButton");
+                WatchCursorPatch.hoverHitbox(skip.hb);
+                return;
+            }
             ArrayList<String> choices = getCardRewardScreenChoices();
             if (choice < 0 || choice >= choices.size() || choices.get(choice).equals("bowl")) {
                 return;
@@ -429,6 +430,16 @@ public class ChoiceScreenUtils {
             CardRewardScreenPatch.hoverCard = AbstractDungeon.cardRewardScreen.rewardGroup.get(choice);
             CardRewardScreenPatch.doHover = true;
             CardRewardScreenPatch.hold = true;
+        } else if (type == ChoiceType.REST) {           // campfire option (rest/smith/recall/...)
+            ArrayList<AbstractCampfireOption> buttons = getValidRestRoomButtons();
+            if (choice >= 0 && choice < buttons.size()) {
+                WatchCursorPatch.hoverHitbox(buttons.get(choice).hb);
+            }
+        } else if (type == ChoiceType.MAP) {            // next map node (path choice)
+            ArrayList<MapRoomNode> nodes = getMapScreenNodeChoices();
+            if (choice >= 0 && choice < nodes.size() && nodes.get(choice).hb != null) {
+                WatchCursorPatch.hoverHitbox(nodes.get(choice).hb);
+            }
         } else if (type == ChoiceType.BOSS_REWARD) {
             if (choice < 0 || choice >= AbstractDungeon.bossRelicScreen.relics.size()) {
                 return;
