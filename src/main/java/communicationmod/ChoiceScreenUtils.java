@@ -159,6 +159,12 @@ public class ChoiceScreenUtils {
     }
 
     public static void executeChoice(int choice_index) {
+        // Committing a pick ends any generic watch-cursor hover (shop relic/potion/purge, event
+        // options): stop warping and park the cursor. No-op for the screen-patch-driven hovers
+        // (card reward / shop card / boss relic), which park themselves on commit.
+        if (WatchCursorPatch.active) {
+            WatchCursorPatch.clearAndPark();
+        }
         ChoiceType choiceType = getCurrentChoiceType();
         switch (choiceType) {
             case EVENT:
@@ -413,6 +419,7 @@ public class ChoiceScreenUtils {
         CardRewardScreenPatch.hold = false;
         ShopScreenPatch.hold = false;
         AbstractRelicUpdatePatch.hold = false;
+        WatchCursorPatch.active = false;
         ChoiceType type = getCurrentChoiceType();
         if (type == ChoiceType.CARD_REWARD) {
             ArrayList<String> choices = getCardRewardScreenChoices();
@@ -435,10 +442,24 @@ public class ChoiceScreenUtils {
                 return;
             }
             Object item = items.get(choice);
-            if (item instanceof AbstractCard) {   // relics/potions are bought directly (no hover patch)
+            if (item instanceof AbstractCard) {
                 ShopScreenPatch.hoverCard = (AbstractCard) item;
                 ShopScreenPatch.doHover = true;
                 ShopScreenPatch.hold = true;
+            } else if (item instanceof StoreRelic) {   // relic buy: warp the cursor to it
+                WatchCursorPatch.hoverHitbox(((StoreRelic) item).relic.hb);
+            } else if (item instanceof StorePotion) {   // potion buy
+                WatchCursorPatch.hoverHitbox(((StorePotion) item).potion.hb);
+            } else if (item instanceof String) {        // the card-removal service ("purge")
+                ShopScreen shop = AbstractDungeon.shopScreen;
+                float px = (Float) ReflectionHacks.getPrivate(shop, ShopScreen.class, "purgeCardX");
+                float py = (Float) ReflectionHacks.getPrivate(shop, ShopScreen.class, "purgeCardY");
+                WatchCursorPatch.hoverPoint(px, py);
+            }
+        } else if (type == ChoiceType.EVENT) {          // event option buttons, incl. Neow
+            ArrayList<LargeDialogOptionButton> buttons = getActiveEventButtons();
+            if (choice >= 0 && choice < buttons.size()) {
+                WatchCursorPatch.hoverHitbox(buttons.get(choice).hb);
             }
         }
     }
