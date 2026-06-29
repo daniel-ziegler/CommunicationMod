@@ -22,7 +22,6 @@ import com.megacrit.cardcrawl.rewards.RewardItem;
 import com.megacrit.cardcrawl.rewards.chests.AbstractChest;
 import com.megacrit.cardcrawl.rooms.*;
 import com.megacrit.cardcrawl.screens.CardRewardScreen;
-import com.megacrit.cardcrawl.rewards.RewardItem;
 import com.megacrit.cardcrawl.ui.buttons.ProceedButton;
 import com.megacrit.cardcrawl.ui.buttons.SkipCardButton;
 import com.megacrit.cardcrawl.screens.mainMenu.MenuCancelButton;
@@ -417,6 +416,12 @@ public class ChoiceScreenUtils {
         ShopScreenPatch.hold = false;
         AbstractRelicUpdatePatch.hold = false;
         WatchCursorPatch.active = false;
+        // Also clear any pending screen-patch hover, so switching from one screen-patch hover to a
+        // generic/skip hover on the same screen can't leave a stale doHover fighting the new target
+        // for a frame. The matching branch below re-sets doHover where it's needed.
+        CardRewardScreenPatch.doHover = false;
+        ShopScreenPatch.doHover = false;
+        AbstractRelicUpdatePatch.doHover = false;
         ChoiceType type = getCurrentChoiceType();
         if (type == ChoiceType.CARD_REWARD) {
             if (choice == -1) {   // skip the card reward (CancelAction) -> hover the skip button

@@ -104,6 +104,8 @@ public class GameStateListener {
         blocked = false;
         waitingForCommand = false;
         waitOneUpdate = false;
+        obtainWaitFrames = 0;
+        eventWaitFrames = 0;
     }
 
     /**
